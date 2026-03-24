@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Rently | Detalle con Mapa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #6366f1; --neon-pink: #ec4899; --text: #f8fafc; --muted: #94a3b8; --border: rgba(255,255,255,0.1); --gold: #fbbf24; }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; }
+        header { padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: 700; color: white; text-decoration: none; }
+        .logo span { color: var(--primary); }
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        
+        .gallery { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; height: 400px; border-radius: 24px; overflow: hidden; margin-bottom: 30px; border: 1px solid var(--border); }
+        .gallery img { width: 100%; height: 100%; object-fit: cover; }
+        .side-gallery { display: grid; grid-template-rows: 1fr 1fr; gap: 15px; }
+        .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 50px; }
+        .booking-card { background: var(--card); padding: 30px; border-radius: 24px; position: sticky; top: 110px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 10; }
+        .btn-reserve { width: 100%; padding: 16px; border-radius: 100px; background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
+        .btn-chat { width: 100%; padding: 16px; border-radius: 100px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border); font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-chat:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+
+        /* ESTILOS DEL MAPA */
+        #map { height: 350px; width: 100%; border-radius: 20px; border: 1px solid var(--border); margin-top: 15px; z-index: 1; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .leaflet-popup-content-wrapper { background: var(--card); color: white; border: 1px solid var(--border); border-radius: 12px; }
+        .leaflet-popup-tip { background: var(--card); }
+        
+        /* ✨ EL PIN DE NEÓN PERSONALIZADO ✨ */
+        .custom-div-icon { background: transparent; border: none; }
+        .neon-pin {
+            width: 30px;
+            height: 30px;
+            background: var(--neon-pink);
+            border: 4px solid white;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px var(--neon-pink), inset 0 0 10px rgba(0,0,0,0.5);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px var(--neon-pink); transform: scale(1) rotate(-45deg); }
+            50% { box-shadow: 0 0 25px var(--neon-pink); transform: scale(1.1) rotate(-45deg); }
+            100% { box-shadow: 0 0 10px var(--neon-pink); transform: scale(1) rotate(-45deg); }
+        }
+
+        .review-card { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .write-review-box { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .star-rating { display: flex; gap: 5px; flex-direction: row-reverse; justify-content: flex-end; margin-bottom: 15px; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 30px; color: #475569; cursor: pointer; transition: 0.2s; }
+        .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: var(--gold); }
+        textarea { width: 100%; padding: 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: white; font-family: inherit; margin-bottom: 15px; resize: vertical; outline: none; }
+    </style>
+</head>
+<body>
+    <header><a href="/" class="logo">Rently<span>.</span></a><div id="uName" style="opacity:0.8; font-size:14px;"></div></header>
+    
+    <div class="container" id="main" style="display:none;">
+        <h1 id="title" style="margin:0 0 5px; font-size:36px;">Cargando...</h1>
+        <p id="loc" style="color:var(--muted); margin:0 0 20px 0;"></p>
+
+        <div class="gallery">
+            <img id="imgMain" src="" alt="Principal">
+            <div class="side-gallery"><img id="img2" src="" alt="Detalle"><img id="img3" src="" alt="Detalle"></div>
+        </div>
+        
+        <div class="layout">
+            <div>
+                <h3>Descripción</h3>
+                <p id="desc" style="line-height:1.8; color:var(--muted);"></p>
+
+                <div style="margin-top:50px; border-top:1px solid var(--border); padding-top:30px;">
+                    <h3>📍 Ubicación en el Mapa</h3>
+                    <p style="color:var(--muted); font-size: 14px; margin-top: -10px;">Explora los alrededores de esta propiedad.</p>
+                    <div id="map"></div>
+                </div>
+                
+                <div style="margin-top:50px; border-top:1px solid var(--border); padding-top:30px;">
+                    <h3>💬 Califica tu estadía</h3>
+                    <div class="write-review-box" id="reviewForm" style="display:none;">
+                        <strong style="display:block; margin-bottom:10px;">¿Qué tal fue tu experiencia?</strong>
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rate" value="5"><label for="star5">★</label>
+                            <input type="radio" id="star4" name="rate" value="4"><label for="star4">★</label>
+                            <input type="radio" id="star3" name="rate" value="3"><label for="star3">★</label>
+                            <input type="radio" id="star2" name="rate" value="2"><label for="star2">★</label>
+                            <input type="radio" id="star1" name="rate" value="1"><label for="star1">★</label>
+                        </div>
+                        <textarea id="revComment" rows="3" placeholder="Describe el lugar, el trato..."></textarea>
+                        <button class="btn-reserve" onclick="submitReview()" style="padding:12px;">Publicar Reseña</button>
+                    </div>
+                    <div id="loginPrompt" style="color:var(--primary); margin-bottom:20px;">Inicia sesión para dejar una reseña.</div>
+                    <div id="reviews"></div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="booking-card">
+                    <div id="price" style="font-size:28px; font-weight:700; margin-bottom:20px;"></div>
+                    <label style="font-size:11px; font-weight:800; color:var(--muted);">FECHAS</label>
+                    <input type="text" id="dateRange" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); padding:15px; border-radius:12px; color:white; margin:5px 0 20px; cursor:pointer;" placeholder="Selecciona fechas">
+                    <div id="totalBox" style="display:none; justify-content:space-between; margin-bottom:20px; font-weight:700;"><span>Total:</span><span id="totalVal" style="color:var(--primary);"></span></div>
+                    
+                    <button class="btn-reserve" onclick="book()">Reservar Ahora</button>
+                    
+                    <button id="btnChatBtn" class="btn-chat" onclick="openChat()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        Contactar al Anfitrión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatBox" style="display:none; position:fixed; bottom:20px; right:20px; width:350px; height:480px; background:var(--card); border:1px solid var(--border); border-radius:24px; flex-direction:column; z-index:9999; box-shadow:0 20px 50px rgba(0,0,0,0.8); overflow:hidden;">
+        <div style="padding:15px 20px; background:var(--primary); color:white; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;"><div style="width:10px; height:10px; background:#10b981; border-radius:50%; box-shadow: 0 0 10px #10b981;"></div>Chat</div>
+            <span style="cursor:pointer; font-size:18px;" onclick="closeChat()">✖</span>
+        </div>
+        <div id="chatMessages" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; background:rgba(0,0,0,0.3);"></div>
+        <div style="padding:15px; background:var(--card); border-top:1px solid var(--border); display:flex; gap:10px;">
+            <input type="text" id="chatInput" placeholder="Escribe..." style="margin:0; flex:1; padding:12px; border-radius:100px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white; outline:none;" onkeyup="if(event.key==='Enter') sendMsg()">
+            <button onclick="sendMsg()" style="background:var(--primary); color:white; border:none; border-radius:50%; width:45px; height:45px; cursor:pointer;">➤</button>
+        </div>
+    </div>
+
+    <script>
+        const pid = new URLSearchParams(window.location.search).get('id');
+        const uid = localStorage.getItem('uid');
+        let price = 0; let dates = [];
+        let hostId = null;
+        let chatInterval;
+        let mapInitialized = false;
+        
+        if (uid) {
+            document.getElementById('uName').innerText = `Hola, ${localStorage.getItem('user')}`;
+            document.getElementById('reviewForm').style.display = 'block';
+            document.getElementById('loginPrompt').style.display = 'none';
+        }
+
+        async function load() {
+            const res = await fetch(`/properties/${pid}`);
+            const p = await res.json();
+            
+            document.getElementById('main').style.display = 'block';
+            document.getElementById('title').innerText = p.title;
+            document.getElementById('loc').innerText = '📍 ' + p.location;
+            
+            document.getElementById('imgMain').src = p.imageUrl || 'https://placehold.co/800x400/1e293b/FFF?text=Foto+Principal';
+            document.getElementById('img2').src = p.imageUrl2 || 'https://placehold.co/400x400/1e293b/FFF?text=Foto+Extra+1';
+            document.getElementById('img3').src = p.imageUrl3 || 'https://placehold.co/400x400/1e293b/FFF?text=Foto+Extra+2';
+            
+            document.getElementById('desc').innerText = p.description;
+            document.getElementById('price').innerHTML = `$${Number(p.pricePerNight).toLocaleString()} <span style="font-size:14px; font-weight:400; color:var(--muted);">/ noche</span>`;
+            price = p.pricePerNight;
+            hostId = p.owner?.id;
+            
+            if(uid && hostId && uid == hostId) document.getElementById('btnChatBtn').style.display = 'none';
+            
+            setTimeout(() => initMap(p.title, p.location), 200);
+
+            if (p.reviews && p.reviews.length > 0) {
+                document.getElementById('reviews').innerHTML = p.reviews.map(r => `<div class="review-card"><div style="display:flex; justify-content:space-between;"><strong>${r.user?.email.split('@')[0] || 'Viajero'}</strong><div style="color:var(--gold); letter-spacing:2px;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div></div><p style="margin:8px 0 0; font-size:14px; color:var(--muted);">${r.comment}</p></div>`).reverse().join(''); 
+            } else { document.getElementById('reviews').innerHTML = '<p style="color:var(--muted)">Sin reseñas aún.</p>'; }
+
+            flatpickr("#dateRange", { mode: "range", minDate: "today", disable: (p.bookings || []).map(b => ({from: b.startDate, to: b.endDate})), theme: "dark", onChange: (d) => { dates = d; if(d.length === 2) { const n = Math.ceil((d[1]-d[0])/(1000*60*60*24)); document.getElementById('totalBox').style.display = 'flex'; document.getElementById('totalVal').innerText = `$${(n * price).toLocaleString()}`; } } });
+        }
+
+        async function initMap(title, locationName) {
+            if (mapInitialized) return;
+            mapInitialized = true;
+
+            // Coordenadas base: Florencia, Caquetá
+            let lat = 1.61438, lng = -75.60623; 
+            let zoomLevel = 10;
+
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}`);
+                const data = await res.json();
+                
+                if (data && data.length > 0) {
+                    lat = data[0].lat;
+                    lng = data[0].lon;
+                    zoomLevel = 14; 
+                }
+            } catch (error) { console.log("Usando mapa base."); }
+
+            // ✨ SCROLL INTELIGENTE DESACTIVADO ✨
+            const map = L.map('map', {
+                center: [lat, lng],
+                zoom: zoomLevel,
+                scrollWheelZoom: false // Mejora UX tremenda
+            });
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // ✨ CREAR EL ICONO NEÓN ✨
+            const neonIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div class="neon-pin"></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -30]
+            });
+
+            const marker = L.marker([lat, lng], { icon: neonIcon }).addTo(map);
+            marker.bindPopup(`<strong style="font-size:15px; color: var(--primary);">${title}</strong><br><span style="color:var(--muted);">${locationName}</span>`).openPopup();
+        }
+
+        function openChat() { if(!uid) return alert("Inicia sesión primero."); document.getElementById('chatBox').style.display = 'flex'; fetchMsgs(); if(chatInterval) clearInterval(chatInterval); chatInterval = setInterval(fetchMsgs, 3000); }
+        function closeChat() { document.getElementById('chatBox').style.display = 'none'; if(chatInterval) clearInterval(chatInterval); }
+        async function fetchMsgs() { if(!uid || !hostId) return; try { const res = await fetch(`/properties/${pid}/chat/${hostId}/${uid}`); const msgs = await res.json(); const box = document.getElementById('chatMessages'); if(msgs.length === 0) { box.innerHTML = `<p style="text-align:center; color:var(--muted); font-size:13px; margin-top:50px;">Escríbele al anfitrión.</p>`; return; } const isScrolledToBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 50; box.innerHTML = msgs.map(m => `<div style="align-self:${m.senderId == uid ? 'flex-end' : 'flex-start'}; background:${m.senderId == uid ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${m.senderId == uid ? 'transparent' : 'var(--border)'}; padding:10px 15px; border-radius:16px; max-width:85%; font-size:14px; word-wrap: break-word;">${m.text}</div>`).join(''); if(isScrolledToBottom) box.scrollTop = box.scrollHeight; } catch(e) {} }
+        async function sendMsg() { const input = document.getElementById('chatInput'); const text = input.value.trim(); if(!text) return; input.value = ''; await fetch(`/properties/${pid}/chat`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ senderId: +uid, receiverId: +hostId, text }) }); fetchMsgs(); setTimeout(() => { const box = document.getElementById('chatMessages'); box.scrollTop = box.scrollHeight; }, 100); }
+        async function submitReview() { const comment = document.getElementById('revComment').value; const ratingInput = document.querySelector('input[name="rate"]:checked'); if (!ratingInput) return alert("Por favor selecciona las estrellas."); if (!comment.trim()) return alert("Por favor escribe un comentario."); const res = await fetch(`/properties/${pid}/reviews`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: +uid, comment, rating: +ratingInput.value }) }); if (res.ok) { alert("✨ ¡Reseña publicada!"); location.reload(); } else { const err = await res.json(); alert("🛑 " + err.message); } }
+        async function book() { if (!uid) return alert("Inicia sesión primero."); if (dates.length !== 2) return alert("Elige fechas."); const res = await fetch('/bookings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ startDate: dates[0].toISOString().split('T')[0], endDate: dates[1].toISOString().split('T')[0], userId: +uid, propertyId: +pid }) }); if (res.ok) { alert("¡Reserva Exitosa!"); location.reload(); } }
+        
+        load();
+    </script>
+</body>
+</html>
