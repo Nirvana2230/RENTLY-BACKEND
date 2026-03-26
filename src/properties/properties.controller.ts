@@ -3,6 +3,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { PropertiesService } from './properties.service';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { CreatePropertyDto } from './dto/create-property.dto';   // ← NUEVO IMPORT
 
 @Controller('properties')
 export class PropertiesController {
@@ -18,7 +19,10 @@ export class PropertiesController {
       }
     })
   }))
-  create(@UploadedFiles() files: Array<Express.Multer.File>, @Body() createPropertyDto: any) {
+  create(
+    @UploadedFiles() files: Array<Express.Multer.File>, 
+    @Body() createPropertyDto: CreatePropertyDto   // ← AQUÍ USAMOS EL DTO CON VALIDACIONES
+  ) {
     if (files && files.length > 0) {
       createPropertyDto.imageUrl = '/uploads/' + files[0].filename;
       if (files[1]) createPropertyDto.imageUrl2 = '/uploads/' + files[1].filename;
@@ -27,26 +31,31 @@ export class PropertiesController {
     return this.propertiesService.create(createPropertyDto);
   }
 
-  // ✨ AQUÍ RECIBIMOS LA PÁGINA Y EL LÍMITE DESDE EL NAVEGADOR ✨
   @Get()
   findAll(@Query('term') term?: string, @Query('page') page?: string, @Query('limit') limit?: string) {
-    // Si manda página, la usamos. Si no, mandamos todas (Para el Panel Admin).
     return this.propertiesService.findAll(term, page ? +page : undefined, limit ? +limit : undefined);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) { return this.propertiesService.findOne(+id); }
+  findOne(@Param('id') id: string) { 
+    return this.propertiesService.findOne(+id); 
+  }
 
   @Delete(':id')
-  remove(@Param('id') id: string) { return this.propertiesService.remove(+id); }
+  remove(@Param('id') id: string) { 
+    return this.propertiesService.remove(+id); 
+  }
 
   @Post(':id/reviews')
   async addReview(@Param('id') id: string, @Body() body: any) {
-    try { return await this.propertiesService.addReview(+id, body.userId, body.comment, body.rating); } 
-    catch (error) { throw new HttpException(error.message, HttpStatus.FORBIDDEN); }
+    try { 
+      return await this.propertiesService.addReview(+id, body.userId, body.comment, body.rating); 
+    } 
+    catch (error) { 
+      throw new HttpException(error.message, HttpStatus.FORBIDDEN); 
+    }
   }
 
-  // ✨ NUEVOS ENDPOINTS PARA EL CHAT ✨
   @Get(':id/chat/:hostId/:userId')
   getChat(@Param('id') id: string, @Param('hostId') hostId: string, @Param('userId') userId: string) {
     return this.propertiesService.getMessages(+id, +hostId, +userId);
@@ -57,3 +66,4 @@ export class PropertiesController {
     return this.propertiesService.sendMessage(+id, body.senderId, body.receiverId, body.text);
   }
 }
+
