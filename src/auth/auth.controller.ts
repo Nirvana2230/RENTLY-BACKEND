@@ -1,7 +1,7 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import type { Response } from 'express'; // Importamos el tipo para evitar errores de TS
+import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -22,10 +22,13 @@ export class AuthController {
     // 2. Extraemos los datos necesarios
     const token = data.access_token;
     const name = data.user.firstName;
-    const id = data.user.id; // <--- Este es el ID que necesitamos para las propiedades
+    const id = data.user.id;
 
-    // 3. Redirigimos al Frontend (index.html) pasando los 3 datos en la URL
-    // Usamos comillas invertidas `` para poder usar ${}
-    res.redirect(`http://localhost:3000?token=${token}&name=${name}&id=${id}`);
+    // 🔥 NUEVO: Usamos variable de entorno para el frontend (funciona en local y en Railway)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    
+    // 3. Redirigimos usando la URL que configuremos en Railway
+    res.redirect(`${frontendUrl}?token=${token}&name=${name}&id=${id}`);
   }
 }
+
