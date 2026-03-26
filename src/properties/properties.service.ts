@@ -20,13 +20,19 @@ export class PropertiesService {
     return this.propertyRepository.save(newProperty);
   }
 
-  findAll(term?: string, page?: number, limit?: number) {
+  // 🔥 ESCUDO: Por defecto trae solo las "activas", pero el admin podrá pedir "all" 🔥
+  findAll(term?: string, page?: number, limit?: number, status: string = 'activa') {
     const query = this.propertyRepository.createQueryBuilder('property');
     query.leftJoinAndSelect('property.owner', 'owner');
     
     // ✨ AQUÍ LE DECIMOS QUE TRAIGA A LOS INQUILINOS (BOOKINGS) ✨
     query.leftJoinAndSelect('property.bookings', 'bookings');
     query.leftJoinAndSelect('bookings.user', 'tenant');
+
+    // Capa de seguridad: filtramos por estado a menos que se pidan todas
+    if (status !== 'all') {
+      query.andWhere('property.status = :status', { status });
+    }
 
     if (term) query.andWhere('(LOWER(property.title) LIKE LOWER(:term) OR LOWER(property.location) LIKE LOWER(:term) OR LOWER(property.tags) LIKE LOWER(:term))', { term: `%${term}%` });
     if (page && limit) query.skip((page - 1) * limit).take(limit);
@@ -63,3 +69,4 @@ export class PropertiesService {
     return this.messageRepository.save(msg);
   }
 }
+

@@ -35,6 +35,10 @@ export class Property {
   @Column({ nullable: true })
   tags: string;
 
+  // 🔥 NUEVA CAPA DE SEGURIDAD: Todas nacen pendientes 🔥
+  @Column({ default: 'pendiente' })
+  status: string;
+
   @ManyToOne(() => User, (user) => user.id)
   owner: User;
 
@@ -44,3 +48,4 @@ export class Property {
   @OneToMany(() => Review, (review) => review.property)
   reviews: Review[];
 }
+
