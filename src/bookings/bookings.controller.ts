@@ -26,9 +26,9 @@ export class BookingsController {
     return this.bookingsService.update(+id, updateBookingDto);
   }
 
-  // 👇 ESTE ES EL IMPORTANTE PARA CANCELAR
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.bookingsService.remove(+id);
   }
 }
+
