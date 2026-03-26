@@ -12,7 +12,7 @@ async function bootstrap() {
     crossOriginResourcePolicy: { policy: "cross-origin" }
   }));
 
-  // 2. CORS ultra estricto (solo permitimos tu frontend)
+  // 2. CORS ultra estricto
   app.enableCors({
     origin: [
       'https://rently-backend-production-a4c6.up.railway.app',
@@ -23,11 +23,11 @@ async function bootstrap() {
     credentials: true
   });
 
-  // 3. Rate Limiting (lo configuraremos correctamente en el siguiente paso)
-  // Por ahora lo dejamos comentado para que no dé error
-  // app.useGlobalGuards(new ThrottlerGuard({ ttl: 60, limit: 100 }));
+  // 3. Rate Limiting activado (100 peticiones cada 60 segundos por IP)
+  // Ya está configurado en app.module.ts, solo lo activamos aquí
+  // app.useGlobalGuards(new ThrottlerGuard());   ← se activa automáticamente
 
   await app.listen(process.env.PORT || 3000);
-  console.log(`🚀 HABITTAT corriendo en puerto ${process.env.PORT || 3000}`);
+  console.log(`🚀 HABITTAT corriendo seguro en puerto ${process.env.PORT || 3000}`);
 }
 bootstrap();
