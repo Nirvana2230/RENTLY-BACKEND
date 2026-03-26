@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';   // ← ya está importado
 import { join } from 'path';
 
 import { AuthModule } from './auth/auth.module';
@@ -21,6 +22,16 @@ import { Review } from './reviews/entity';
 
     ConfigModule.forRoot({ isGlobal: true }),
 
+    // 🔥 RATE LIMITING (Throttler) - 100 peticiones cada 60 segundos por IP
+    ThrottlerModule.forRoot({
+      throttlers: [          // ← ESTO ES LO QUE FALTABA
+        {
+          ttl: 60,           // tiempo en segundos
+          limit: 100,        // máximo de peticiones permitidas
+        },
+      ],
+    }),
+
     // AQUÍ ESTÁ EL BLOQUE ASÍNCRONO CORRECTO
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
@@ -28,7 +39,7 @@ import { Review } from './reviews/entity';
         url: process.env.DATABASE_URL,
         entities: [User, Property, Booking, Review],
         synchronize: true,
-        ssl: { rejectUnauthorized: false }, 
+        ssl: { rejectUnauthorized: false },
       }),
     }),
 
