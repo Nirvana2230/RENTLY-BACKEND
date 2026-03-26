@@ -1,26 +1,36 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm'; // Importamos la herramienta de base de datos
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';   // ← Actualizado
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './google.strategy';
-import { User } from '../users/user.entity'; // Importamos el "molde" del usuario
+import { User } from '../users/user.entity';
 
 @Module({
   imports: [
-    // Aquí damos el permiso oficial para usar la tabla User 👇
-    TypeOrmModule.forFeature([User]), 
-    
+    TypeOrmModule.forFeature([User]),
+
     PassportModule,
+
+    // ConfigModule ya estaba, lo dejamos global
     ConfigModule.forRoot(),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1d' },
+
+    // 🔥 JWT CONFIGURACIÓN PROFESIONAL CON ConfigService
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.getOrThrow<string>('JWT_SECRET'),   // ← Secreto desde Railway
+        signOptions: { 
+          expiresIn: '15m'   // ← Por defecto 15 minutos (el servicio ya lo controla)
+        },
+      }),
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy],
 })
 export class AuthModule {}
+
