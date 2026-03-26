@@ -1,11 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
+import { ValidationPipe } from '@nestjs/common';   // ← NUEVO
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. Helmet → Cabeceras de seguridad automáticas
+  // 1. Helmet → Cabeceras de seguridad
   app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
@@ -23,11 +24,18 @@ async function bootstrap() {
     credentials: true
   });
 
-  // 3. Rate Limiting activado (100 peticiones cada 60 segundos por IP)
-  // Ya está configurado en app.module.ts, solo lo activamos aquí
-  // app.useGlobalGuards(new ThrottlerGuard());   ← se activa automáticamente
+  // 3. 🔥 GLOBAL VALIDATION PIPE (la nueva capa de seguridad)
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,           // elimina propiedades que no están en el DTO
+      forbidNonWhitelisted: true, // rechaza si mandan propiedades extras
+      transform: true,           // convierte automáticamente strings a números, booleanos, etc.
+      transformOptions: { enableImplicitConversion: true },
+    })
+  );
 
   await app.listen(process.env.PORT || 3000);
-  console.log(`🚀 HABITTAT corriendo seguro en puerto ${process.env.PORT || 3000}`);
+  console.log(`🚀 HABITTAT corriendo SUPER SEGURO en puerto ${process.env.PORT || 3000}`);
 }
 bootstrap();
+
