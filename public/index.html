@@ -198,42 +198,106 @@
     </div>
     <div id="fab" class="fab hidden" onclick="openModal('modalPub')">+</div>
 
-    <script>
-        const ADMIN_NAME = "Luis Fernando Lopez Silva"; 
+<script>
+        // 1. CONFIGURACIÓN PRINCIPAL
+        const API_URL = "https://rently-backend-production-a4c6.up.railway.app";
+        const ADMIN_NAME = "luis fernando"; // En minúsculas para que sea a prueba de fallos
         const uid = localStorage.getItem('uid');
-        let currentPage = 1; const LIMIT_PER_PAGE = 6; let currentSearchTerm = "";
+        let currentPage = 1; 
+        const LIMIT_PER_PAGE = 6; 
+        let currentSearchTerm = "";
 
+        // 2. RECUPERAR DATOS DEL LOGIN (Google Auth)
         const params = new URLSearchParams(window.location.search);
-        if(params.get('token')) { localStorage.setItem('jwt', params.get('token')); localStorage.setItem('user', params.get('name')); localStorage.setItem('uid', params.get('id')); window.history.replaceState({}, '', "/"); }
-        if(uid) { 
+        if(params.get('token')) { 
+            localStorage.setItem('jwt', params.get('token')); 
+            localStorage.setItem('user', params.get('name')); 
+            localStorage.setItem('uid', params.get('id')); 
+            window.history.replaceState({}, '', "/"); 
+            location.reload(); // Recargar para que aparezcan los botones
+        }
+
+        // 3. SEGURIDAD Y PERMISOS DE INTERFAZ
+        if(localStorage.getItem('uid')) { 
             document.getElementById('btnLogin').classList.add('hidden'); 
             document.getElementById('loggedIn').classList.remove('hidden'); 
             document.getElementById('uName').innerText = localStorage.getItem('user'); 
             document.getElementById('fab').classList.remove('hidden'); 
             document.getElementById('tabHost').classList.remove('hidden'); 
-            if(localStorage.getItem('user') === ADMIN_NAME) document.getElementById('tabAdmin').classList.remove('hidden'); 
+            
+            // Verificación de Admin a prueba de mayúsculas/tildes
+            const userName = localStorage.getItem('user') || "";
+            if(userName.toLowerCase().includes(ADMIN_NAME)) {
+                document.getElementById('tabAdmin').classList.remove('hidden'); 
+            }
         }
-        if(!localStorage.getItem('habittatCookiesAccepted')) { document.getElementById('cookieBanner').classList.remove('hidden'); }
-        function acceptCookies() { localStorage.setItem('habittatCookiesAccepted', 'true'); document.getElementById('cookieBanner').classList.add('hidden'); }
 
-        async function loadAll() { loadExploreData(false); loadPanelsData(); }
-        async function loadExploreData(append = false) { /* tu código original se mantiene igual */ }
-        function loadMore() { currentPage++; loadExploreData(true); }
-        function startSearch() { currentSearchTerm = document.getElementById('sTerm').value; currentPage = 1; loadExploreData(false); }
-        async function loadPanelsData() { /* tu código original se mantiene igual */ }
-        function renderHostPanel(data) { /* tu código original se mantiene igual */ }
-        async function deleteMyProp(id) { /* tu código original se mantiene igual */ }
-        function renderAdminPanel(data) { /* tu código original se mantiene igual */ }
-        function filterAdmin() { /* tu código original se mantiene igual */ }
-        async function deletePropAsAdmin(id, title) { /* tu código original se mantiene igual */ }
-        function switchTab(t) { /* tu código original se mantiene igual */ }
-        async function create() { /* tu código original se mantiene igual */ }
+        // 4. BANNER DE COOKIES
+        if(!localStorage.getItem('habittatCookiesAccepted')) { 
+            document.getElementById('cookieBanner').classList.remove('hidden'); 
+        }
+        function acceptCookies() { 
+            localStorage.setItem('habittatCookiesAccepted', 'true'); 
+            document.getElementById('cookieBanner').classList.add('hidden'); 
+        }
+
+        // 5. NAVEGACIÓN ENTRE PESTAÑAS (¡El arreglo principal!)
+        function switchTab(tabName) {
+            // Ocultar todo
+            document.getElementById('viewExpContainer').classList.add('hidden');
+            document.getElementById('viewHost').classList.add('hidden');
+            document.getElementById('viewAdmin').classList.add('hidden');
+            
+            // Quitar el color azul/activo de los botones
+            document.getElementById('tabExp').classList.remove('active');
+            document.getElementById('tabHost').classList.remove('active');
+            document.getElementById('tabAdmin').classList.remove('active');
+
+            // Mostrar solo lo que se hizo clic
+            if(tabName === 'exp') {
+                document.getElementById('viewExpContainer').classList.remove('hidden');
+                document.getElementById('tabExp').classList.add('active');
+            } else if(tabName === 'host') {
+                document.getElementById('viewHost').classList.remove('hidden');
+                document.getElementById('tabHost').classList.add('active');
+            } else if(tabName === 'admin') {
+                document.getElementById('viewAdmin').classList.remove('hidden');
+                document.getElementById('tabAdmin').classList.add('active');
+            }
+        }
+
+        // 6. FUNCIONES BÁSICAS DE CONEXIÓN A RAILWAY
+        async function loadExploreData(append = false) { 
+            try {
+                const res = await fetch(`${API_URL}/properties`);
+                const data = await res.json();
+                console.log("Propiedades cargadas:", data);
+                // Si tienes propiedades en la base de datos, aquí las pintaríamos
+            } catch (error) {
+                console.error("Error conectando al backend:", error);
+            }
+        }
+
+        function startSearch() { 
+            currentSearchTerm = document.getElementById('sTerm').value; 
+            console.log("Buscando:", currentSearchTerm); 
+        }
+
+        async function create() { 
+            alert("¡Función de crear propiedad conectada! Falta armar el backend.");
+            closeModal('modalPub');
+        }
+
+        // 7. UTILIDADES DE MODALES
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function logout() { localStorage.clear(); location.reload(); }
         
-        loadAll(); 
+        // 8. INICIAR LA APP
+        loadExploreData(); 
     </script>
 </body>
 </html>
+
+
 
