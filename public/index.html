@@ -284,8 +284,80 @@
         }
 
         async function create() { 
-            alert("¡Función de crear propiedad conectada! Falta armar el backend.");
-            closeModal('modalPub');
+            // 1. Recolectamos lo que escribió el usuario
+            const fileInput = document.getElementById('pFile1');
+            const title = document.getElementById('pTitle').value.trim();
+            const location = document.getElementById('pLoc').value.trim();
+            const price = document.getElementById('pPrice').value.trim();
+            const description = document.getElementById('pDesc').value.trim();
+
+            // 2. SEGURIDAD 1: Validación de campos (Que no manden cosas vacías)
+            if(!fileInput.files[0] || !title || !location || !price || !description) {
+                alert("⚠️ ¡Pausa! Debes llenar todos los campos y subir una foto de la propiedad.");
+                return; // Detiene la función aquí mismo
+            }
+
+            if(price <= 0) {
+                alert("⚠️ El precio por noche debe ser mayor a cero.");
+                return;
+            }
+
+            // 3. Empacamos los datos (Usamos FormData porque vamos a enviar una imagen real)
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]); // La imagen
+            formData.append('title', title);
+            formData.append('location', location);
+            formData.append('price', price); 
+            formData.append('description', description);
+
+            try {
+                // 4. SEGURIDAD 2: Buscamos tu "Gafete VIP" (El token de Google)
+                const token = localStorage.getItem('jwt');
+                if(!token) {
+                    alert("❌ Error de seguridad: No estás logueado.");
+                    return;
+                }
+
+                // Cambiamos el texto del botón para que el usuario sepa que está cargando
+                const btn = document.querySelector('#modalPub .btn-submit');
+                btn.innerText = "Subiendo a la nube... ☁️";
+                btn.disabled = true; // Bloqueamos el botón para que no le den doble clic
+
+                // 5. El envío real a tu backend en Railway
+                const res = await fetch(`${API_URL}/properties`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // ¡Aquí va la seguridad!
+                    },
+                    body: formData // Los datos y la foto
+                });
+
+                if(res.ok) {
+                    alert("✅ ¡Uff! Tu propiedad ya está publicada en HABITTAT.");
+                    closeModal('modalPub');
+                    
+                    // Limpiamos el formulario para la próxima vez
+                    document.getElementById('pTitle').value = "";
+                    document.getElementById('pLoc').value = "";
+                    document.getElementById('pPrice').value = "";
+                    document.getElementById('pDesc').value = "";
+                    fileInput.value = "";
+                    
+                    // Si tienes la función loadExploreData, la llamamos para refrescar la pantalla
+                    if (typeof loadExploreData === "function") loadExploreData();
+                } else {
+                    const error = await res.json();
+                    alert(`❌ Error del servidor: ${error.message || 'No se pudo publicar'}`);
+                }
+            } catch (error) {
+                console.error("Fallo al publicar:", error);
+                alert("❌ No hay conexión con la base de datos.");
+            } finally {
+                // Devolvemos el botón a la normalidad
+                const btn = document.querySelector('#modalPub .btn-submit');
+                btn.innerText = "Publicar ahora";
+                btn.disabled = false;
+            }
         }
 
         // 7. UTILIDADES DE MODALES
@@ -298,6 +370,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
