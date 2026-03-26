@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rently | Midnight Edition</title>
+    <title>HABITTAT | Midnight Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -80,7 +80,7 @@
 <body>
 
     <header>
-        <div class="logo">Rently<span>.</span></div>
+        <div class="logo">HABITTAT<span>.</span></div>
         <div id="authArea">
             <button id="btnLogin" class="btn-ghost" onclick="window.location.href='/auth/google'">Entrar</button>
             <div id="loggedIn" class="hidden">
@@ -170,13 +170,13 @@
 
     <footer>
         <div class="footer-links"><a onclick="openModal('modalTerms')">Términos y Condiciones</a><a onclick="openModal('modalPrivacy')">Política de Privacidad</a><a href="https://instagram.com" target="_blank">Instagram</a></div>
-        <div class="copyright">© 2026 Rently Midnight Edition. Diseñado y desarrollado en Florencia, Caquetá.<br>Todos los derechos reservados.</div>
+        <div class="copyright">© 2026 HABITTAT Midnight Edition. Diseñado y desarrollado en Florencia, Caquetá.<br>Todos los derechos reservados.</div>
     </footer>
 
-    <div id="cookieBanner" class="cookie-banner hidden"><span class="cookie-text">🍪 Utilizamos cookies para mejorar tu experiencia y mantener tu sesión activa en Rently.</span><button class="btn-cookie" onclick="acceptCookies()">¡Entendido!</button></div>
+    <div id="cookieBanner" class="cookie-banner hidden"><span class="cookie-text">🍪 Utilizamos cookies para mejorar tu experiencia y mantener tu sesión activa en HABITTAT.</span><button class="btn-cookie" onclick="acceptCookies()">¡Entendido!</button></div>
 
-    <div id="modalTerms" class="modal-overlay" onclick="if(event.target === this) closeModal('modalTerms')"><div class="modal-box"><h2 style="margin-top:0; color:var(--primary);">Términos y Condiciones ⚖️</h2><div style="font-size:15px; color:var(--text-muted); line-height:1.7; max-height:50vh; overflow-y:auto; padding-right:10px;"><p><strong>1. Uso de la Plataforma:</strong> Rently actúa estrictamente como una plataforma tecnológica intermediaria entre anfitriones e inquilinos.</p><p><strong>2. Exención de Responsabilidad:</strong> Cualquier accidente, daño a la propiedad, robo o disputa legal que ocurra durante una reserva deberá resolverse directamente entre el anfitrión y el huésped.</p></div><button onclick="closeModal('modalTerms')" class="btn-submit" style="margin-top:20px;">Cerrar</button></div></div>
-    <div id="modalPrivacy" class="modal-overlay" onclick="if(event.target === this) closeModal('modalPrivacy')"><div class="modal-box"><h2 style="margin-top:0; color:var(--primary);">Política de Privacidad 🛡️</h2><div style="font-size:15px; color:var(--text-muted); line-height:1.7; max-height:50vh; overflow-y:auto; padding-right:10px;"><p><strong>1. Recolección de Datos:</strong> Al autenticarse, Rently solicita y almacena únicamente información básica estrictamente para identificar tu cuenta.</p><p><strong>2. Auditoría:</strong> Los administradores de Rently tienen acceso a los nombres de usuario asociados a publicaciones y reservas por motivos de seguridad legal.</p></div><button onclick="closeModal('modalPrivacy')" class="btn-submit" style="margin-top:20px;">Cerrar</button></div></div>
+    <div id="modalTerms" class="modal-overlay" onclick="if(event.target === this) closeModal('modalTerms')"><div class="modal-box"><h2 style="margin-top:0; color:var(--primary);">Términos y Condiciones ⚖️</h2><div style="font-size:15px; color:var(--text-muted); line-height:1.7; max-height:50vh; overflow-y:auto; padding-right:10px;"><p><strong>1. Uso de la Plataforma:</strong> HABITTAT actúa estrictamente como una plataforma tecnológica intermediaria entre anfitriones e inquilinos.</p><p><strong>2. Exención de Responsabilidad:</strong> Cualquier accidente, daño a la propiedad, robo o disputa legal que ocurra durante una reserva deberá resolverse directamente entre el anfitrión y el huésped.</p></div><button onclick="closeModal('modalTerms')" class="btn-submit" style="margin-top:20px;">Cerrar</button></div></div>
+    <div id="modalPrivacy" class="modal-overlay" onclick="if(event.target === this) closeModal('modalPrivacy')"><div class="modal-box"><h2 style="margin-top:0; color:var(--primary);">Política de Privacidad 🛡️</h2><div style="font-size:15px; color:var(--text-muted); line-height:1.7; max-height:50vh; overflow-y:auto; padding-right:10px;"><p><strong>1. Recolección de Datos:</strong> Al autenticarse, HABITTAT solicita y almacena únicamente información básica estrictamente para identificar tu cuenta.</p><p><strong>2. Auditoría:</strong> Los administradores de HABITTAT tienen acceso a los nombres de usuario asociados a publicaciones y reservas por motivos de seguridad legal.</p></div><button onclick="closeModal('modalPrivacy')" class="btn-submit" style="margin-top:20px;">Cerrar</button></div></div>
     
     <div id="modalPub" class="modal-overlay" onclick="if(event.target === this) closeModal('modalPub')">
         <div class="modal-box">
@@ -196,8 +196,8 @@
         const params = new URLSearchParams(window.location.search);
         if(params.get('token')) { localStorage.setItem('jwt', params.get('token')); localStorage.setItem('user', params.get('name')); localStorage.setItem('uid', params.get('id')); window.history.replaceState({}, '', "/"); }
         if(uid) { document.getElementById('btnLogin').classList.add('hidden'); document.getElementById('loggedIn').classList.remove('hidden'); document.getElementById('uName').innerText = localStorage.getItem('user'); document.getElementById('fab').classList.remove('hidden'); document.getElementById('tabHost').classList.remove('hidden'); if(localStorage.getItem('user') === ADMIN_NAME) document.getElementById('tabAdmin').classList.remove('hidden'); }
-        if(!localStorage.getItem('rentlyCookiesAccepted')) { document.getElementById('cookieBanner').classList.remove('hidden'); }
-        function acceptCookies() { localStorage.setItem('rentlyCookiesAccepted', 'true'); document.getElementById('cookieBanner').classList.add('hidden'); }
+        if(!localStorage.getItem('habittatCookiesAccepted')) { document.getElementById('cookieBanner').classList.remove('hidden'); }
+        function acceptCookies() { localStorage.setItem('habittatCookiesAccepted', 'true'); document.getElementById('cookieBanner').classList.add('hidden'); }
 
         async function loadAll() { loadExploreData(false); loadPanelsData(); }
 
@@ -236,12 +236,10 @@
 
         async function deleteMyProp(id) { if(confirm("¿Seguro que quieres retirar esta publicación?")) { const res = await fetch(`/properties/${id}`, { method: 'DELETE' }); if(res.ok) { location.reload(); } else alert("Error. Contacta a soporte."); } }
 
-        // ✨ NUEVA FUNCIÓN: RENDERIZAR TABLA DE AUDITORÍA ✨
         function renderAdminPanel(data) {
             document.getElementById('admTotal').innerText = data.length;
             document.getElementById('admValue').innerText = `$${data.reduce((sum, p) => sum + Number(p.pricePerNight), 0).toLocaleString()}`;
             
-            // Lógica para contar usuarios únicos
             const uniqueHosts = new Set(data.filter(p => p.owner).map(p => p.owner.id)).size;
             let uniqueTenants = new Set();
             data.forEach(p => { if(p.bookings) p.bookings.forEach(b => { if(b.user) uniqueTenants.add(b.user.id); }); });
@@ -253,7 +251,6 @@
             if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay casas.</td></tr>`; return; }
 
             tbody.innerHTML = data.map(p => {
-                // Sacar el nombre del correo (ej: pedro@gmail.com -> pedro)
                 const ownerName = p.owner ? p.owner.email.split('@')[0] : 'Sistema';
                 const bookingsCount = p.bookings ? p.bookings.length : 0;
                 let tenantsHtml = '<span style="color:var(--text-muted); font-size:12px;">Nadie aún</span>';
@@ -296,3 +293,4 @@
     </script>
 </body>
 </html>
+
